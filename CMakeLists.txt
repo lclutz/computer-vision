@@ -48,11 +48,13 @@ else()
 endif()
 
 find_package(SDL2 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL2-2.26.1/cmake" CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main SDL2::SDL2)
+target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
 
 add_compile_definitions(CV_IGNORE_DEBUG_BUILD_GUARD)
 find_package(OpenCV PATHS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/opencv-4.6.0/build" CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE opencv_world)
+target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})
 
 add_subdirectory(vendor/imgui-1.89)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
