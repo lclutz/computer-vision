@@ -1,3 +1,5 @@
+![CI status](https://github.com/lclutz/computer-vision/actions/workflows/ci.yml/badge.svg)
+
 # Computer Vision Projekt
 
 Projekt für das Labor der Vorlesung _Computer Vision_ an der
