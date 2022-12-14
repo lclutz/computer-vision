@@ -15,8 +15,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         message(FATAL_ERROR "Version ${MSVC_VERSION} of MSVC is not supported. At least 1910 is required.")
     endif()
 
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
     if(NOT CMAKE_VS_PLATFORM_NAME)
         set(CMAKE_VS_PLATFORM_NAME "x64")
     endif()

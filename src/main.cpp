@@ -162,17 +162,15 @@ int main(int argc, char *argv[])
             if (app.webcam.is_open()) {
                 if (app.webcam.new_frame_available()) {
                     cv::Mat image = app.webcam.read();
-#if 0
-                    cv::Mat motion = motion_detector.apply(image);
-                    main_window_texture = bgr_mat_to_sdl_texture(motion, renderer, main_window_texture);
-#endif
+
                     if (app.state == CALIBRATING_SKIN_TONE) {
                         cv::Mat hand = skin_tone_calibrator.apply(image);
                         main_window_texture = bgr_mat_to_sdl_texture(hand, renderer, main_window_texture);
                     }
 
                     if (app.state >= INITIALIZATION_DONE) {
-                        cv::Mat output = hand_detector.apply(image);
+                        std::vector<cv::Rect> motion_hints = motion_detector.apply(image);
+                        cv::Mat output = hand_detector.apply(image, &motion_hints);
                         main_window_texture = bgr_mat_to_sdl_texture(output, renderer, main_window_texture);
                     }
                 }

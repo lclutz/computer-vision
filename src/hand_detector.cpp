@@ -19,21 +19,29 @@ HandDetector::HandDetector(cv::Scalar skin_tone)
 {}
 
 cv::Mat
-HandDetector::apply(const cv::Mat &input)
+HandDetector::apply(const cv::Mat &input, std::vector<cv::Rect> *hints)
 {
-    cv::Mat result;
+    cv::Mat result = cv::Mat(input.rows, input.cols, CV_8UC1, cv::Scalar(0));
     cv::cvtColor(input, result, cv::COLOR_BGR2HSV);
 
     cv::Scalar lower_bound(skin_tone[0] - h_low_delta,  skin_tone[1] - s_low_delta,    0.0);
     cv::Scalar upper_bound(skin_tone[0] + h_high_delta, skin_tone[1] + s_high_delta, 255.0);
 
-    cv::inRange(result, lower_bound, upper_bound, result);
+    if (hints) {
+        for (const cv::Rect &rect : *hints) {
+            cv::Mat tmp;
+            cv::inRange(result(rect), lower_bound, upper_bound, tmp);
+            result(rect) |= tmp;
+        }
+    } else {
+        cv::inRange(result, lower_bound, upper_bound, result);
+    }
 
     cv::Mat input_mask = result.clone();
     for (auto &mask : masks) { result &= mask; }
 
     masks.push_back(input_mask);
-    while (masks.size() > 3) { masks.pop_front(); }
+    while (masks.size() > 0) { masks.pop_front(); }
 
 #if 0
     cv::erode(
