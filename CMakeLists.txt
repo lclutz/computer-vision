@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME}
     WIN32 MACOSX_BUNDLE
     assets/icon.rc
     src/application.cpp
+    src/background_estimator.cpp
     src/gui.cpp
     src/hand_detector.cpp
     src/main.cpp
