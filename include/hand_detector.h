@@ -1,7 +1,6 @@
 #pragma once
 
 #include <deque>
-#include <vector>
 
 #include <opencv2/opencv.hpp>
 
@@ -16,5 +15,5 @@ struct HandDetector {
     HandDetector();
     HandDetector(cv::Scalar skin_tone);
 
-    cv::Mat apply(const cv::Mat &input, std::vector<cv::Rect> *hints = nullptr);
+    cv::Mat apply(const cv::Mat &input, cv::Mat *hint = nullptr);
 };

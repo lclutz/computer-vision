@@ -1,8 +1,14 @@
 #include <algorithm>
+#include <vector>
 
 #include "motion_detector.h"
 
-std::vector<cv::Rect>
+MotionDetector::MotionDetector()
+    : debug_output(false)
+    , previous_frame(cv::Mat())
+{}
+
+cv::Mat
 MotionDetector::apply(const cv::Mat &input)
 {
     cv::Mat gray;
@@ -70,12 +76,19 @@ MotionDetector::apply(const cv::Mat &input)
     }
 
     if (debug_output) {
-        cv::cvtColor(output, output, cv::COLOR_GRAY2BGR);
+        cv::Mat debug_image = output.clone();
+        cv::cvtColor(debug_image, debug_image, cv::COLOR_GRAY2BGR);
         for (const cv::Rect &merged_box : merged_boxes) {
-            cv::rectangle(output, merged_box, cv::Scalar(0, 0, 255));
+            cv::rectangle(debug_image, merged_box, cv::Scalar(0, 0, 255));
         }
-        cv::imshow("Motion detection", output);
+        cv::imshow("Motion detection", debug_image);
     }
 
-    return merged_boxes;
+    for (const cv::Rect &merged_box : merged_boxes) {
+        cv::rectangle(output, merged_box, cv::Scalar(0xff), cv::FILLED);
+    }
+
+    cv::imshow("Bewegung", output);
+
+    return output;
 }
