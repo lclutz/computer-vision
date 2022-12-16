@@ -10,6 +10,7 @@
 #include "defer.h"
 #include "logging.h"
 
+#include "background_estimator.h"
 #include "gui.h"
 #include "motion_detector.h"
 #include "skin_tone_calibrator.h"
@@ -19,7 +20,7 @@ constexpr int WINDOW_WIDTH  = 800;
 constexpr int WINDOW_HEIGHT = 600;
 
 static SDL_Texture *
-bgr_mat_to_sdl_texture(const cv::Mat &mat,
+bgr_mat_to_sdl_texture(const cv::Mat &image_bgr,
                        SDL_Renderer *renderer,
                        SDL_Texture *texture)
 {
@@ -28,7 +29,8 @@ bgr_mat_to_sdl_texture(const cv::Mat &mat,
     if (texture) {
         int texture_width, texture_height;
         SDL_QueryTexture(texture, 0, 0, &texture_width, &texture_height);
-        texture_size_fits = texture_width == mat.cols && texture_height == mat.rows;
+        texture_size_fits =
+            (texture_width == image_bgr.cols) && (texture_height == image_bgr.rows);
     }
 
     if (texture && texture_size_fits) {
@@ -39,14 +41,14 @@ bgr_mat_to_sdl_texture(const cv::Mat &mat,
             renderer,
             SDL_PIXELFORMAT_BGR24,
             SDL_TEXTUREACCESS_STREAMING,
-            mat.cols, mat.rows);
+            image_bgr.cols, image_bgr.rows);
     }
 
     if (!result) {
         logw("Failed to create output texture: %s", SDL_GetError());
     }
 
-    if (SDL_UpdateTexture(result, 0, mat.data, 3*mat.cols) != 0) {
+    if (SDL_UpdateTexture(result, 0, image_bgr.data, 3*image_bgr.cols) != 0) {
         logw("Failed to update output texture: %s", SDL_GetError());
     }
 
@@ -59,6 +61,7 @@ int main(int argc, char *argv[])
     (void)argv;
 
     Application app;
+    BackgroundEstimator background_estimator;
     GUI gui;
     MotionDetector motion_detector;
     SkinToneCalibrator skin_tone_calibrator;
@@ -162,17 +165,22 @@ int main(int argc, char *argv[])
             if (app.webcam.is_open()) {
                 if (app.webcam.new_frame_available()) {
                     cv::Mat image = app.webcam.read();
+                    background_estimator.apply(image, 0.01f);
 
+#if 0
                     if (app.state == CALIBRATING_SKIN_TONE) {
                         cv::Mat hand = skin_tone_calibrator.apply(image);
                         main_window_texture = bgr_mat_to_sdl_texture(hand, renderer, main_window_texture);
                     }
 
                     if (app.state >= INITIALIZATION_DONE) {
-                        std::vector<cv::Rect> motion_hints = motion_detector.apply(image);
-                        cv::Mat output = hand_detector.apply(image, &motion_hints);
+                        cv::Mat motion_hint = motion_detector.apply(image);
+                        cv::Mat output = hand_detector.apply(image, &motion_hint);
+                        cv::cvtColor(output, output, cv::COLOR_GRAY2BGR);
                         main_window_texture = bgr_mat_to_sdl_texture(output, renderer, main_window_texture);
                     }
+#endif
+                    main_window_texture = bgr_mat_to_sdl_texture(image, renderer, main_window_texture);
                 }
                 SDL_RenderCopy(renderer, main_window_texture, 0, 0);
             }
