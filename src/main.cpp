@@ -174,11 +174,11 @@ int main(int argc, char *argv[])
 
                     if (app.state >= INITIALIZATION_DONE) {
                         cv::Mat background_mask_motion = motion_detector.apply(image);
-                        cv::Mat background_mask_hue = bg_estimator_hue.apply(image, 0.01);
+                        cv::Mat background_mask_hue = bg_estimator_hue.apply(image, 0.001);
                         cv::Mat background_mask_brightness = bg_estimator_brightness.apply(image, 0.01);
 
-                        // cv::Mat combined_mask = background_mask_motion & background_mask_hue & background_mask_brightness;
-                        // cv::imshow("Combined masks", combined_mask);
+                        cv::Mat combined_mask = background_mask_motion & background_mask_hue & background_mask_brightness;
+                        cv::imshow("Combined masks", combined_mask);
 
                         cv::Mat output = skin_tone_detector.apply(image);
                         cv::imshow("Hand detector output", output);

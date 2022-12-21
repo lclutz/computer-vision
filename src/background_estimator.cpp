@@ -26,13 +26,15 @@ BackgroundEstimator::apply(const cv::Mat input, double alpha)
             if (model.empty()) { model = gray.clone(); }
 
             cv::absdiff(gray, model, output);
-            output.convertTo(output, CV_8UC1, 0xff);
 
+            cv::accumulateWeighted(gray, model, alpha);
+
+            output.convertTo(output, CV_8UC1, 0xff/1.0);
             cv::threshold(
                 output,           // srv
                 output,           // dst
-                0x10/255.0,       // thresh
-                0xff/255.0,       // maxval
+                0x10,             // thresh
+                0xff,             // maxval
                 cv::THRESH_BINARY // type
             );
         } break;
@@ -42,17 +44,29 @@ BackgroundEstimator::apply(const cv::Mat input, double alpha)
 
             cv::Mat hsv;
             cv::cvtColor(input, hsv, cv::COLOR_BGR2HSV);
-            hsv.convertTo(hsv, CV_32FC3, 1.0/255.0);
 
-            if (model.empty()) { model = hsv.clone(); }
+            std::vector<cv::Mat> channels;
+            cv::split(hsv, channels);
 
-            cv::absdiff(hsv, model, output);
+            // Note: For HSV, hue range is [0,179], saturation range is [0,255],
+            // and value range is [0,255]
+            cv::Mat hue = channels[0];
+            hue.convertTo(hue, CV_32FC1, 1.0/179.0);
 
+            cv::GaussianBlur(hue, hue, cv::Size(21, 21), 0);
+
+            if (model.empty()) { model = hue.clone(); }
+
+            cv::absdiff(hue, model, output);
+
+            cv::accumulateWeighted(hue, model, alpha);
+
+            output.convertTo(output, CV_8UC1, 0xff/1.0);
             cv::threshold(
-                output,           // srv
-                output,           // dst
-                0x10/255.0,       // thresh
-                0xff/255.0,       // maxval
+                output,     // srv
+                output,     // dst
+                0x10,       // thresh
+                0xff,       // maxval
                 cv::THRESH_BINARY // type
             );
         } break;
@@ -61,8 +75,6 @@ BackgroundEstimator::apply(const cv::Mat input, double alpha)
             assert(false && "UNREACHABLE");
         } break;
     }
-
-    cv::accumulateWeighted(input, model, alpha);
 
     cv::imshow(title, output);
 

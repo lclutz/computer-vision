@@ -25,13 +25,22 @@ Webcam::open(int id, int backend)
 
     bool camera_opened = cap.isOpened();
     if (camera_opened) {
-        cap.set(cv::CAP_PROP_FPS, 30);
+        // cap.set(cv::CAP_PROP_FPS, 30);
         next_frame = _read();
 
         std::thread(
             [](cv::VideoCapture &cam) {
-                std::this_thread::sleep_for(std::chrono::seconds(3));
+                std::this_thread::sleep_for(std::chrono::seconds(10));
                 double exposure = cam.get(cv::CAP_PROP_EXPOSURE);
+                logi("Read exposure value: %.3f", exposure);
+
+#if 0
+                // Note: For Lenovo Carbon x1 3rd gen on Windows with the
+                // DirectShow backend the values for the integrated webcam are
+                // in the range of [-12.0, -3.0]
+                exposure = -3.0;
+#endif
+
                 if (exposure != 0) {
                     if (cam.set(cv::CAP_PROP_EXPOSURE, exposure)) {
                         logi("Exposure fixed to %.3f", exposure);
