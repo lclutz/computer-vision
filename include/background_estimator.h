@@ -4,10 +4,16 @@
 
 #include <opencv2/opencv.hpp>
 
+enum EstimationType {
+    BG_ESTIMATOR_BRIGHTNESS,
+    BG_ESTIMATOR_HUE
+};
+
 struct BackgroundEstimator {
+    EstimationType type;
     cv::Mat model;
 
-    BackgroundEstimator();
+    BackgroundEstimator(EstimationType type);
 
-    cv::Mat apply(cv::Mat input, float alpha);
+    cv::Mat apply(const cv::Mat input, double alpha);
 };

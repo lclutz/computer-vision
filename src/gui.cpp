@@ -41,7 +41,7 @@ capture_api_as_cstr(int video_capture_api)
 GUI::GUI()
     : show_stats_window(false)
     , show_settings_window(true)
-    , show_hand_detector_settings(false)
+    , show_skin_tone_detector_settings(false)
     , failed_to_open_camera(false)
 {}
 
@@ -132,25 +132,25 @@ GUI::render_settings(Application &app)
 }
 
 void
-GUI::render_hand_detector_settings(HandDetector &hand_detector)
+GUI::render_skin_tone_detector_settings(SkinToneDetector &skin_tone_detector)
 {
     ImGui::Begin("Hand detector settings");
 
     ImGui::Text("{h=%.3f, s=%.3f, v=%.3f}",
-        hand_detector.skin_tone[0],
-        hand_detector.skin_tone[1],
-        hand_detector.skin_tone[2]);
+        skin_tone_detector.skin_tone[0],
+        skin_tone_detector.skin_tone[1],
+        skin_tone_detector.skin_tone[2]);
 
-    ImGui::InputDouble("h low delta", &hand_detector.h_low_delta);
-    ImGui::InputDouble("h high delta", &hand_detector.h_high_delta);
-    ImGui::InputDouble("s low delta", &hand_detector.s_low_delta);
-    ImGui::InputDouble("s high delta", &hand_detector.s_high_delta);
+    ImGui::InputDouble("h low delta", &skin_tone_detector.h_low_delta);
+    ImGui::InputDouble("h high delta", &skin_tone_detector.h_high_delta);
+    ImGui::InputDouble("s low delta", &skin_tone_detector.s_low_delta);
+    ImGui::InputDouble("s high delta", &skin_tone_detector.s_high_delta);
 
     ImGui::End();
 }
 
 void
-GUI::render(Application &app, HandDetector &hand_detector)
+GUI::render(Application &app, SkinToneDetector &skin_tone_detector)
 {
     if (show_stats_window) {
         render_stats(app);
@@ -160,7 +160,7 @@ GUI::render(Application &app, HandDetector &hand_detector)
         render_settings(app);
     }
 
-    if (show_hand_detector_settings) {
-        render_hand_detector_settings(hand_detector);
+    if (show_skin_tone_detector_settings) {
+        render_skin_tone_detector_settings(skin_tone_detector);
     }
 }

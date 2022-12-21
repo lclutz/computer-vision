@@ -9,7 +9,7 @@ MotionDetector::MotionDetector()
 {}
 
 cv::Mat
-MotionDetector::apply(const cv::Mat &input)
+MotionDetector::apply(const cv::Mat input)
 {
     cv::Mat gray;
     cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);

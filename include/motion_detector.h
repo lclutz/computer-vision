@@ -9,5 +9,5 @@ struct MotionDetector
 
     MotionDetector();
 
-    cv::Mat apply(const cv::Mat &input);
+    cv::Mat apply(const cv::Mat input);
 };
