@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
                         cv::Mat combined_mask = background_mask_motion & background_mask_hue & background_mask_brightness;
                         cv::imshow("Combined masks", combined_mask);
 
-                        cv::Mat output = skin_tone_detector.apply(image);
+                        cv::Mat output = skin_tone_detector.apply(image, combined_mask);
                         cv::imshow("Hand detector output", output);
 
                         // cv::cvtColor(output, output, cv::COLOR_GRAY2BGR);
