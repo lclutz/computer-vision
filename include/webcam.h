@@ -8,6 +8,8 @@ struct Webcam {
     cv::VideoCapture cap;
     std::future<cv::Mat> next_frame;
 
+    std::future<cv::Mat> _read();
+
     bool open(int id, int backend);
     bool is_open();
     void close();

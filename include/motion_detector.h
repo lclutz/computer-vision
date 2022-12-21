@@ -4,7 +4,10 @@
 
 struct MotionDetector
 {
+    bool debug_output;
     cv::Mat previous_frame;
 
-    cv::Mat apply(const cv::Mat &input);
+    MotionDetector();
+
+    cv::Mat apply(const cv::Mat input);
 };

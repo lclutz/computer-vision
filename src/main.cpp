@@ -10,16 +10,17 @@
 #include "defer.h"
 #include "logging.h"
 
+#include "background_estimator.h"
 #include "gui.h"
 #include "motion_detector.h"
 #include "skin_tone_calibrator.h"
-#include "hand_detector.h"
+#include "skin_tone_detector.h"
 
 constexpr int WINDOW_WIDTH  = 800;
 constexpr int WINDOW_HEIGHT = 600;
 
 static SDL_Texture *
-bgr_mat_to_sdl_texture(const cv::Mat &mat,
+bgr_mat_to_sdl_texture(const cv::Mat &image_bgr,
                        SDL_Renderer *renderer,
                        SDL_Texture *texture)
 {
@@ -28,7 +29,8 @@ bgr_mat_to_sdl_texture(const cv::Mat &mat,
     if (texture) {
         int texture_width, texture_height;
         SDL_QueryTexture(texture, 0, 0, &texture_width, &texture_height);
-        texture_size_fits = texture_width == mat.cols && texture_height == mat.rows;
+        texture_size_fits =
+            (texture_width == image_bgr.cols) && (texture_height == image_bgr.rows);
     }
 
     if (texture && texture_size_fits) {
@@ -39,14 +41,14 @@ bgr_mat_to_sdl_texture(const cv::Mat &mat,
             renderer,
             SDL_PIXELFORMAT_BGR24,
             SDL_TEXTUREACCESS_STREAMING,
-            mat.cols, mat.rows);
+            image_bgr.cols, image_bgr.rows);
     }
 
     if (!result) {
         logw("Failed to create output texture: %s", SDL_GetError());
     }
 
-    if (SDL_UpdateTexture(result, 0, mat.data, 3*mat.cols) != 0) {
+    if (SDL_UpdateTexture(result, 0, image_bgr.data, 3*image_bgr.cols) != 0) {
         logw("Failed to update output texture: %s", SDL_GetError());
     }
 
@@ -59,10 +61,12 @@ int main(int argc, char *argv[])
     (void)argv;
 
     Application app;
+    BackgroundEstimator bg_estimator_brightness(BG_ESTIMATOR_BRIGHTNESS);
+    BackgroundEstimator bg_estimator_hue(BG_ESTIMATOR_HUE);
     GUI gui;
     MotionDetector motion_detector;
     SkinToneCalibrator skin_tone_calibrator;
-    HandDetector hand_detector;
+    SkinToneDetector skin_tone_detector;
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         loge("Failed to initialize SDL: %s", SDL_GetError());
@@ -140,11 +144,11 @@ int main(int argc, char *argv[])
                             gui.show_stats_window = !gui.show_stats_window;
                         } break;
                         case SDLK_F3: {
-                            gui.show_hand_detector_settings = !gui.show_hand_detector_settings;
+                            gui.show_skin_tone_detector_settings = !gui.show_skin_tone_detector_settings;
                         } break;
                         case SDLK_RETURN: {
                             if (app.state == CALIBRATING_SKIN_TONE) {
-                                hand_detector = HandDetector(skin_tone_calibrator.calibrate());
+                                skin_tone_detector = SkinToneDetector(skin_tone_calibrator.calibrate());
                                 app.state = INITIALIZATION_DONE;
                             }
                         } break;
@@ -162,25 +166,82 @@ int main(int argc, char *argv[])
             if (app.webcam.is_open()) {
                 if (app.webcam.new_frame_available()) {
                     cv::Mat image = app.webcam.read();
-#if 0
-                    cv::Mat motion = motion_detector.apply(image);
-                    main_window_texture = bgr_mat_to_sdl_texture(motion, renderer, main_window_texture);
-#endif
+
                     if (app.state == CALIBRATING_SKIN_TONE) {
                         cv::Mat hand = skin_tone_calibrator.apply(image);
                         main_window_texture = bgr_mat_to_sdl_texture(hand, renderer, main_window_texture);
                     }
 
                     if (app.state >= INITIALIZATION_DONE) {
-                        cv::Mat output = hand_detector.apply(image);
-                        main_window_texture = bgr_mat_to_sdl_texture(output, renderer, main_window_texture);
+                        cv::Mat background_mask_motion = motion_detector.apply(image);
+                        cv::Mat background_mask_hue = bg_estimator_hue.apply(image, 0.001);
+                        cv::Mat background_mask_brightness = bg_estimator_brightness.apply(image, 0.01);
+
+                        cv::Mat combined_mask = background_mask_motion & background_mask_hue & background_mask_brightness;
+                        cv::imshow("Combined masks", combined_mask);
+
+                        cv::Mat output = skin_tone_detector.apply(image);
+                        cv::imshow("Hand detector output", output);
+
+                        // cv::cvtColor(output, output, cv::COLOR_GRAY2BGR);
+                        main_window_texture = bgr_mat_to_sdl_texture(image, renderer, main_window_texture);
                     }
                 }
-                SDL_RenderCopy(renderer, main_window_texture, 0, 0);
+
+                int window_width, window_height;
+                SDL_GetWindowSize(window, &window_width, &window_height);
+                float window_aspect_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
+
+                int texture_width, texture_height;
+                SDL_QueryTexture(main_window_texture, NULL, NULL, &texture_width, &texture_height);
+                float texture_aspect_ratio = static_cast<float>(texture_width) / static_cast<float>(texture_height);
+
+                SDL_Rect dstrect;
+
+                if (window_aspect_ratio <= texture_aspect_ratio)
+                {
+                    int height =
+                        static_cast<int>(
+                            roundf(
+                                static_cast<float>(window_width) *
+                                static_cast<float>(texture_height) /
+                                static_cast<float>(texture_width)
+                            )
+                        );
+
+                    dstrect.x = 0;
+                    dstrect.y = (window_height - height) / 2;
+                    dstrect.w = window_width;
+                    dstrect.h = height;
+                } else {
+                    int width =
+                        static_cast<int>(
+                            roundf(
+                                static_cast<float>(window_height) *
+                                static_cast<float>(texture_width) /
+                                static_cast<float>(texture_height)
+                            )
+                        );
+
+                    dstrect.x = (window_width - width) / 2;
+                    dstrect.y = 0;
+                    dstrect.w = width;
+                    dstrect.h = window_height;
+                }
+
+                SDL_RenderCopyEx(
+                    renderer,
+                    main_window_texture,
+                    0,        // source SDL_Rect or NULL for thhe entire texture
+                    &dstrect, // destination SDL_Rect or NULL for the entire rendering target
+                    0.0,      // angle of clockwise rotation
+                    0,        // center of rotation or NULL for rotating around the center of dstrect
+                    SDL_FLIP_NONE
+                );
             }
 
             ImGui::NewFrame();
-            gui.render(app, hand_detector);
+            gui.render(app, skin_tone_detector);
             ImGui::Render();
             ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
         }
