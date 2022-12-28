@@ -1,7 +1,3 @@
-#include <chrono>
-
-#include <opencv2/videoio.hpp>
-
 #include "logging.h"
 #include "webcam.h"
 

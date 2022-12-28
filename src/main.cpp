@@ -1,5 +1,6 @@
 #include <deque>
 #include <vector>
+#include <optional>
 
 #include <SDL.h>
 

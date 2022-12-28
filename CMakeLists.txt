@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
-set(CMAKE_CXX_STANDARD 11 CACHE STRING "The C++ standard to use")
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard to use")
 set(CMAKE_C_STANDARD 11 CACHE STRING "The C standard to use")
 
 project(computervision)
@@ -58,9 +58,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})
 
 add_subdirectory(vendor/imgui-1.89)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
-
-# add_subdirectory(vendor/nativefiledialog-116)
-# target_link_libraries(${PROJECT_NAME} PRIVATE nfd)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
