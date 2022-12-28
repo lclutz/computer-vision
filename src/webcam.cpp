@@ -1,3 +1,5 @@
+#include <thread>
+
 #include "logging.h"
 #include "webcam.h"
 
