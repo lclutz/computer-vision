@@ -29,5 +29,7 @@ SkinToneDetector::apply(const cv::Mat input, const cv::Mat hint)
 
     if (!hint.empty()) { result &= hint; }
 
+    cv::imshow("SkinToneDetector Mask", result);
+
     return result;
 }

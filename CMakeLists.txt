@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
+set(CMAKE_CXX_STANDARD 11 CACHE STRING "The C++ standard to use")
 set(CMAKE_C_STANDARD 11 CACHE STRING "The C standard to use")
 
 project(computervision)
@@ -33,6 +33,7 @@ add_executable(${PROJECT_NAME}
     src/application.cpp
     src/background_estimator.cpp
     src/gui.cpp
+    src/hand_detector.cpp
     src/main.cpp
     src/motion_detector.cpp
     src/position_tracker.cpp
@@ -58,8 +59,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})
 add_subdirectory(vendor/imgui-1.89)
 target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
 
-add_subdirectory(vendor/nativefiledialog-116)
-target_link_libraries(${PROJECT_NAME} PRIVATE nfd)
+# add_subdirectory(vendor/nativefiledialog-116)
+# target_link_libraries(${PROJECT_NAME} PRIVATE nfd)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

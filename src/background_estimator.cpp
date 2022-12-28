@@ -17,7 +17,7 @@ BackgroundEstimator::apply(const cv::Mat input, double alpha)
     switch (type)
     {
         case BG_ESTIMATOR_BRIGHTNESS: {
-            title = "Background Estimator (Brightness)";
+            title = "BackgroundEstimator: Brightness Mask";
 
             cv::Mat gray;
             cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);
@@ -40,7 +40,7 @@ BackgroundEstimator::apply(const cv::Mat input, double alpha)
         } break;
 
         case BG_ESTIMATOR_HUE: {
-            title = "Background Estimator (Color)";
+            title = "BackgroundEstimator: Color Mask";
 
             cv::Mat hsv;
             cv::cvtColor(input, hsv, cv::COLOR_BGR2HSV);

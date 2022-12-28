@@ -1,18 +1,40 @@
 #pragma once
 
 #include <future>
+#include <mutex>
+#include <optional>
 
 #include <opencv2/opencv.hpp>
 
-struct Webcam {
+#include "event_receiver.h"
+
+struct Webcam : public EventReceiver
+{
+    int camera_id;
+    int camera_api;
+    std::mutex cap_lock;
     cv::VideoCapture cap;
-    std::future<cv::Mat> next_frame;
+    std::future<std::optional<cv::Mat>> next_frame;
 
-    std::future<cv::Mat> _read();
+    std::future<std::optional<cv::Mat>> _read();
 
-    bool open(int id, int backend);
+    bool open();
     bool is_open();
     void close();
-    bool new_frame_available();
-    cv::Mat read();
+    std::optional<cv::Mat> read();
+
+    void handle_event(const Event &e) override;
+
+    Webcam(const Webcam &) = delete;
+    Webcam &operator=(const Webcam &) = delete;
+    Webcam(const Webcam &&) = delete;
+    Webcam &operator=(const Webcam &&) = delete;
+
+    static auto &instance() {
+        static Webcam webcam;
+        return webcam;
+    }
+
+private:
+    Webcam();
 };
