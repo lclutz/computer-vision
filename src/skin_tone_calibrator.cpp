@@ -36,11 +36,15 @@ SkinToneCalibrator::apply(const cv::Mat &input)
     return result;
 }
 
-cv::Scalar
+bool
 SkinToneCalibrator::calibrate()
 {
+    if (skin_tone_calibrated) {
+        return false;
+    }
+
     if (skin_tone_crop.empty()) {
-        return cv::Scalar(0);
+        return false;
     }
 
     // Switch to HSV color space so we can ignore brightness/shadows
@@ -73,5 +77,7 @@ SkinToneCalibrator::calibrate()
     cv::namedWindow("Skin tone", cv::WINDOW_NORMAL);
     cv::imshow("Skin tone", m);
 
-    return color;
+    skin_tone = color;
+    skin_tone_calibrated = true;
+    return true;
 }

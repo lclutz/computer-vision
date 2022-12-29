@@ -1,18 +1,32 @@
 #pragma once
 
 #include "application.h"
+#include "event_receiver.h"
 #include "skin_tone_detector.h"
 
-struct GUI {
+struct GUI : public EventReceiver
+{
     bool show_stats_window;
     bool show_settings_window;
     bool show_skin_tone_detector_settings;
     bool failed_to_open_camera;
 
-    GUI();
+    void render_stats();
+    void render_settings();
+    void render();
 
-    void render_stats(const Application &app);
-    void render_settings(Application &app);
-    void render_skin_tone_detector_settings(SkinToneDetector &skin_tone_detector);
-    void render(Application &app, SkinToneDetector &skin_tone_detector);
+    void handle_event(const Event &e) override;
+
+    GUI(const GUI &) = delete;
+    GUI &operator=(const GUI &) = delete;
+    GUI(const GUI &&) = delete;
+    GUI &operator=(const GUI &&) = delete;
+
+    static auto &instance() {
+        static GUI gui;
+        return gui;
+    }
+
+private:
+    GUI();
 };

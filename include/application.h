@@ -2,19 +2,24 @@
 
 #include <string>
 
+#include "event.h"
 #include "webcam.h"
 #include "state.h"
 
 struct Application {
-    State state;
-
-    int camera_id;
-    int camera_api;
-    Webcam webcam;
-
-    std::string asset_folder_path;
-
+    bool should_close;
     int fps;
 
+    Application(const Application &) = delete;
+    Application &operator=(const Application &) = delete;
+    Application(const Application &&) = delete;
+    Application &operator=(const Application &&) = delete;
+
+    static auto &instance() {
+        static Application app;
+        return app;
+    }
+
+private:
     Application();
 };

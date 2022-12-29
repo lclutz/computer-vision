@@ -5,26 +5,28 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 
-#include <nfd.h>
-
 #include "application.h"
 #include "defer.h"
 #include "logging.h"
+#include "message_queue.h"
 #include "gui.h"
 
-static void
-folder_picker_thread(std::string &asset_folder_path)
+
+void
+GUI::handle_event(const Event &e)
 {
-    nfdchar_t *out_path = 0;
-    nfdresult_t result = NFD_PickFolder(0, &out_path);
-    if ( result == NFD_OKAY ) {
-        asset_folder_path = std::string(out_path);
-    }
-    else if ( result == NFD_CANCEL ) {
-        logi("User pressed cancel.");
-    }
-    else {
-        loge("%s", NFD_GetError());
+    switch (e.type)
+    {
+    case EVENT_TOGGLE_SETTINGS_WINDOW_VISIBILITY:
+        show_settings_window = !show_settings_window;
+        break;
+
+    case EVENT_TOGGLE_STATS_WINDOW_VISIBILITY:
+        show_stats_window = !show_stats_window;
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -46,57 +48,75 @@ GUI::GUI()
 {}
 
 void
-GUI::render_stats(const Application &app)
+GUI::render()
 {
+    ImGui::NewFrame();
+    if (show_stats_window) {
+        render_stats();
+    }
+
+    if (show_settings_window)  {
+        render_settings();
+    }
+    ImGui::Render();
+}
+
+void
+GUI::render_stats()
+{
+    Application &app = Application::instance();
+    Webcam &webcam = Webcam::instance();
+
     ImGui::Begin("Stats");
 
     ImGui::Text("Game");
     ImGui::Text("FPS: %d", app.fps);
-    ImGui::Text("Asset folder: \"%s\"", app.asset_folder_path.c_str());
 
     ImGui::Text("Camera");
-    ImGui::Text("ID:          %d", app.camera_id);
-    ImGui::Text("API backend: %s", capture_api_as_cstr(app.camera_api));
+    ImGui::Text("ID:          %d", webcam.camera_id);
+    ImGui::Text("API backend: %s", capture_api_as_cstr(webcam.camera_api));
 
     ImGui::End();
 }
 
 void
-GUI::render_settings(Application &app)
+GUI::render_settings()
 {
+    MessageQueue &message_queue = MessageQueue::instance();
+    Webcam &webcam = Webcam::instance();
+
     ImGui::SetNextWindowPos({300,200}, ImGuiCond_Once);
     ImGui::Begin("Settings");
 
-    bool camera_is_open = app.webcam.is_open();
+    bool camera_is_open = webcam.is_open();
 
     ImGui::BeginDisabled(camera_is_open);
 
         ImGui::PushItemWidth(100);
-        ImGui::InputInt("Camera id", &app.camera_id);
+        ImGui::InputInt("Camera id", &(webcam.camera_id));
 
         ImGui::PushItemWidth(100);
-        if (ImGui::BeginCombo("Video capture API", capture_api_as_cstr(app.camera_api))) {
+        if (ImGui::BeginCombo("Video capture API", capture_api_as_cstr(webcam.camera_api))) {
             if (ImGui::Selectable(capture_api_as_cstr(cv::CAP_ANY),
-                app.camera_api == cv::CAP_ANY)) {
-                app.camera_api = cv::CAP_ANY;
+                webcam.camera_api == cv::CAP_ANY)) {
+                webcam.camera_api = cv::CAP_ANY;
                 ImGui::SetItemDefaultFocus();
             }
             if (ImGui::Selectable(capture_api_as_cstr(cv::CAP_DSHOW),
-                app.camera_api == cv::CAP_DSHOW)) {
-                app.camera_api = cv::CAP_DSHOW;
+                webcam.camera_api == cv::CAP_DSHOW)) {
+                webcam.camera_api = cv::CAP_DSHOW;
                 ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
         }
 
         if (ImGui::Button("Open camera")) {
-            app.webcam.open(
-                app.camera_id,
-                app.camera_api);
+            webcam.open();
 
-            failed_to_open_camera = !app.webcam.is_open();
+            failed_to_open_camera = !webcam.is_open();
             if (!failed_to_open_camera) {
-                app.state = CALIBRATING_SKIN_TONE;
+                // TODO:
+                // app.state = CALIBRATING_SKIN_TONE;
             }
         }
 
@@ -110,57 +130,16 @@ GUI::render_settings(Application &app)
 
     ImGui::BeginDisabled(!camera_is_open);
         if (ImGui::Button("Close camera")) {
-            app.webcam.close();
+            webcam.close();
         }
     ImGui::EndDisabled();
 
-    ImGui::Text("Asset folder: %s", app.asset_folder_path.c_str());
-    if (ImGui::Button("Pick asset folder")) {
-        std::thread t(
-            folder_picker_thread,
-            std::ref(app.asset_folder_path));
-        t.detach();
-    }
-
-    ImGui::BeginDisabled(!camera_is_open || app.asset_folder_path.empty());
+    ImGui::BeginDisabled(!camera_is_open);
         if (ImGui::Button("Start")) {
             show_settings_window = false;
+            message_queue.push(Event(EVENT_START));
         }
     ImGui::EndDisabled();
 
     ImGui::End();
-}
-
-void
-GUI::render_skin_tone_detector_settings(SkinToneDetector &skin_tone_detector)
-{
-    ImGui::Begin("Hand detector settings");
-
-    ImGui::Text("{h=%.3f, s=%.3f, v=%.3f}",
-        skin_tone_detector.skin_tone[0],
-        skin_tone_detector.skin_tone[1],
-        skin_tone_detector.skin_tone[2]);
-
-    ImGui::InputDouble("h low delta", &skin_tone_detector.h_low_delta);
-    ImGui::InputDouble("h high delta", &skin_tone_detector.h_high_delta);
-    ImGui::InputDouble("s low delta", &skin_tone_detector.s_low_delta);
-    ImGui::InputDouble("s high delta", &skin_tone_detector.s_high_delta);
-
-    ImGui::End();
-}
-
-void
-GUI::render(Application &app, SkinToneDetector &skin_tone_detector)
-{
-    if (show_stats_window) {
-        render_stats(app);
-    }
-
-    if (show_settings_window)  {
-        render_settings(app);
-    }
-
-    if (show_skin_tone_detector_settings) {
-        render_skin_tone_detector_settings(skin_tone_detector);
-    }
 }

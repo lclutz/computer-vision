@@ -4,8 +4,7 @@
 #include "motion_detector.h"
 
 MotionDetector::MotionDetector()
-    : debug_output(false)
-    , previous_frame(cv::Mat())
+    : previous_frame(cv::Mat())
 {}
 
 cv::Mat
@@ -34,7 +33,7 @@ MotionDetector::apply(const cv::Mat input)
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(output, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     std::vector<cv::Rect> boxes;
-    for (int i = 0; i < contours.size(); ++i)
+    for (size_t i = 0; i < contours.size(); ++i)
     {
         cv::Rect box = boundingRect(contours[i]);
         boxes.push_back(box);
@@ -75,20 +74,11 @@ MotionDetector::apply(const cv::Mat input)
         }
     }
 
-    if (debug_output) {
-        cv::Mat debug_image = output.clone();
-        cv::cvtColor(debug_image, debug_image, cv::COLOR_GRAY2BGR);
-        for (const cv::Rect &merged_box : merged_boxes) {
-            cv::rectangle(debug_image, merged_box, cv::Scalar(0, 0, 255));
-        }
-        cv::imshow("Motion detection", debug_image);
-    }
-
     for (const cv::Rect &merged_box : merged_boxes) {
         cv::rectangle(output, merged_box, cv::Scalar(0xff), cv::FILLED);
     }
 
-    cv::imshow("Bewegung", output);
+    cv::imshow("MotionDetector Mask", output);
 
     return output;
 }
