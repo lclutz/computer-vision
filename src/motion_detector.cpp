@@ -33,7 +33,7 @@ MotionDetector::apply(const cv::Mat input)
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(output, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     std::vector<cv::Rect> boxes;
-    for (int i = 0; i < contours.size(); ++i)
+    for (size_t i = 0; i < contours.size(); ++i)
     {
         cv::Rect box = boundingRect(contours[i]);
         boxes.push_back(box);

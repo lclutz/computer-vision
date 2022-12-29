@@ -21,7 +21,18 @@ Webcam::Webcam()
 void
 Webcam::handle_event(const Event &e)
 {
-    (void)e;
+    switch (e.type) {
+    case EVENT_CAMERA_OPEN:
+        open();
+        break;
+
+    case EVENT_CAMERA_CLOSE:
+        close();
+        break;
+
+    default:
+        break;
+    }
 }
 
 std::future<std::optional<cv::Mat>>

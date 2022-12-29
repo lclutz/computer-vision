@@ -24,6 +24,9 @@ GUI::handle_event(const Event &e)
     case EVENT_TOGGLE_STATS_WINDOW_VISIBILITY:
         show_stats_window = !show_stats_window;
         break;
+
+    default:
+        break;
     }
 }
 
