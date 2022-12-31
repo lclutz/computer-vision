@@ -15,7 +15,7 @@ jobs:
       - name: dependencies
         run : |
           sudo apt-get update
-          sudo apt-get install libsdl2-dev libopencv-dev -qq
+          sudo apt-get install ninja-build libsdl2-dev libopencv-dev -qq
       - name: build
         run: |
           mkdir build
@@ -34,5 +34,5 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G "Ninja Multi-Config" ..
+          cmake ..
           cmake --build .
