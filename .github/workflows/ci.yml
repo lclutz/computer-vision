@@ -20,7 +20,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake -G "Ninja Multi-Config" ..
           cmake --build .
 
   build-windows-msvc:
@@ -34,5 +34,5 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake -G "Ninja Multi-Config" ..
           cmake --build .
