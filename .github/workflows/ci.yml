@@ -15,7 +15,7 @@ jobs:
       - name: dependencies
         run : |
           sudo apt-get update
-          sudo apt-get install zenity libsdl2-dev libopencv-dev -qq
+          sudo apt-get install libsdl2-dev libopencv-dev -qq
       - name: build
         run: |
           mkdir build
