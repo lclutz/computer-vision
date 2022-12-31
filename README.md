@@ -8,15 +8,21 @@ Projekt für das Labor der Vorlesung _Computer Vision_ an der
 ## Kurzanleitung
 
 ```shell
-mkdir build && cd build # Build-Verzeichnis erstellen
-cmake ..                # Build Dateien erzeugen
-cmake --build .         # Programm bauen
+mkdir build && cd build          # Build-Verzeichnis erstellen
+cmake -G "Ninja Multi-Config" .. # Build Dateien erzeugen
+cmake --build .                  # Programm bauen
 ```
 
 Wer unter Windows entwickelt muss die `x64 Native Tools Command Prompt`
 verwenden um die Kommandos auszuführen.
 
-## Dependencies
+Der Release-Build hat bessere Performanz insbesondere für ältere Computer:
+
+```shell
+cmake --build . --config Release # Programm in Release-Mode bauen
+```
+
+## Voraussetzungen
 
 ### Windows
 
@@ -28,8 +34,8 @@ verwenden um die Kommandos auszuführen.
 
 Getestet mit Ubuntu 22.04 LTS:
 
-```
-sudo apt install build-essential git git-lfs cmake zenity libsdl2-dev libopencv-dev
+```shell
+sudo apt install build-essential git git-lfs cmake ninja-build libsdl2-dev libopencv-dev
 ```
 
 ### MacOS
