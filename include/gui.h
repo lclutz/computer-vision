@@ -1,8 +1,6 @@
 #pragma once
 
-#include "application.h"
 #include "event_receiver.h"
-#include "skin_tone_detector.h"
 
 struct GUI : public EventReceiver
 {

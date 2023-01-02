@@ -6,8 +6,6 @@
 #include <opencv2/videoio.hpp>
 
 #include "application.h"
-#include "defer.h"
-#include "logging.h"
 #include "message_queue.h"
 #include "gui.h"
 
