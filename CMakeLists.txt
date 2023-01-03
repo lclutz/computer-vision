@@ -37,6 +37,7 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/motion_detector.cpp
     src/position_tracker.cpp
+    src/rect_helper.cpp
     src/skin_tone_calibrator.cpp
     src/skin_tone_detector.cpp
     src/webcam.cpp
