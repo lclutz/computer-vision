@@ -1,5 +1,9 @@
+#include <utility>
+#include <vector>
+
 #include "hand_detector.h"
 #include "logging.h"
+#include "rect_helper.h"
 
 cv::Mat
 HandDetector::apply(const cv::Mat input)
@@ -27,44 +31,31 @@ HandDetector::apply(const cv::Mat input)
                     boxes.push_back(box);
                 }
 
+                std::vector<cv::Rect> combined_boxes = merge_rects(boxes,
+                    [](const cv::Rect &r1, const cv::Rect &r2) -> bool {
+                        return std::abs(get_min_distance_rectangles(r1, r2)) < 100.0;
+                    }
+                );
+
                 // Sort boxes by area from largest to smallest
-                std::sort(boxes.begin(), boxes.end(), [](const cv::Rect &a, const cv::Rect &b) -> bool {
-                    return a.width * a.height > b.width * b.height;
-                });
-
-                std::vector<cv::Rect> merged_boxes;
-                for (const cv::Rect &box : boxes) {
-                    bool merged = false;
-
-                    for (cv::Rect &merged_box : merged_boxes) {
-                        // Check if box is inside merged_box
-                        if (box.x < merged_box.x + merged_box.width &&
-                            box.x + box.width > merged_box.x &&
-                            box.y < merged_box.y + merged_box.height &&
-                            box.y + box.height > merged_box.y) {
-
-                            int x_min = std::min(box.x, merged_box.x);
-                            int y_min = std::min(box.y, merged_box.y);
-                            int x_max = std::max(box.x + box.width, merged_box.x + merged_box.width);
-                            int y_max = std::max(box.y + box.height, merged_box.y + merged_box.height);
-
-                            merged_box.x = x_min;
-                            merged_box.y = y_min;
-                            merged_box.width  = x_max - x_min;
-                            merged_box.height = y_max - y_min;
-
-                            merged = true;
-                        }
+                std::sort(combined_boxes.begin(), combined_boxes.end(),
+                    [](const cv::Rect &a, const cv::Rect &b) -> bool {
+                        return a.width * a.height > b.width * b.height;
                     }
+                );
 
-                    if (!merged) {
-                        merged_boxes.push_back(box);
-                    }
-                }
+                // Merge them together if they intersect
+                combined_boxes = merge_rects(combined_boxes, rects_intersect);
 
                 output = input;
-                for (const cv::Rect &merged_box : merged_boxes) {
-                    cv::rectangle(output, merged_box, cv::Scalar(0x00, 0x00, 0xff));
+                for (const cv::Rect &hand_rect : combined_boxes) {
+                    cv::rectangle(output, hand_rect, cv::Scalar(0x00, 0x00, 0xff), 5);
+                    cv::putText(
+                        output, "Hand",
+                        cv::Point(hand_rect.x, hand_rect.y),
+                        cv::FONT_HERSHEY_DUPLEX, 1.0,
+                        cv::Scalar(0x00, 0x00, 0xff), 2
+                    );
                 }
             }
 

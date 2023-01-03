@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "motion_detector.h"
+#include "rect_helper.h"
 
 MotionDetector::MotionDetector()
     : previous_frame(cv::Mat())
@@ -40,39 +41,14 @@ MotionDetector::apply(const cv::Mat input)
     }
 
     // Sort boxes by area from largest to smallest
-    std::sort(boxes.begin(), boxes.end(), [](const cv::Rect &a, const cv::Rect &b) -> bool {
-        return a.width * a.height > b.width * b.height;
-    });
-
-    std::vector<cv::Rect> merged_boxes;
-    for (const cv::Rect &box : boxes) {
-        bool merged = false;
-
-        for (cv::Rect &merged_box : merged_boxes) {
-            // Check if box is inside merged_box
-            if (box.x < merged_box.x + merged_box.width &&
-                box.x + box.width > merged_box.x &&
-                box.y < merged_box.y + merged_box.height &&
-                box.y + box.height > merged_box.y) {
-
-                int x_min = std::min(box.x, merged_box.x);
-                int y_min = std::min(box.y, merged_box.y);
-                int x_max = std::max(box.x + box.width, merged_box.x + merged_box.width);
-                int y_max = std::max(box.y + box.height, merged_box.y + merged_box.height);
-
-                merged_box.x = x_min;
-                merged_box.y = y_min;
-                merged_box.width  = x_max - x_min;
-                merged_box.height = y_max - y_min;
-
-                merged = true;
-            }
+    std::sort(boxes.begin(), boxes.end(),
+        [](const cv::Rect &a, const cv::Rect &b) -> bool {
+            return a.width * a.height > b.width * b.height;
         }
+    );
 
-        if (!merged) {
-            merged_boxes.push_back(box);
-        }
-    }
+    // Merge them together if they intersect
+    std::vector<cv::Rect> merged_boxes = merge_rects(boxes, rects_intersect);
 
     for (const cv::Rect &merged_box : merged_boxes) {
         cv::rectangle(output, merged_box, cv::Scalar(0xff), cv::FILLED);
