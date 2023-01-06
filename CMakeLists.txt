@@ -7,25 +7,21 @@ project(computervision)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    if (NOT MSVC)
-        message(FATAL_ERROR "We only support MSVC for Windows builds!")
-    endif()
+    if (MSVC)
+        if(MSVC_VERSION LESS 1910)
+            message(FATAL_ERROR "Version ${MSVC_VERSION} of MSVC is not supported. At least 1910 is required")
+        endif()
 
-    if(MSVC_VERSION LESS 1910)
-        message(FATAL_ERROR "Version ${MSVC_VERSION} of MSVC is not supported. At least 1910 is required.")
-    endif()
+        if(NOT CMAKE_VS_PLATFORM_NAME)
+            set(CMAKE_VS_PLATFORM_NAME "x64")
+        endif()
 
-    if(NOT CMAKE_VS_PLATFORM_NAME)
-        set(CMAKE_VS_PLATFORM_NAME "x64")
-    endif()
-
-    if(NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64") OR
-       NOT (CMAKE_SIZEOF_VOID_P STREQUAL "8"))
-        message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} arch is not supported! We only support x64")
+        if(NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64") OR
+           NOT (CMAKE_SIZEOF_VOID_P STREQUAL "8"))
+            message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} arch is not supported! We only support x64")
+        endif()
     endif()
 endif()
-
-include_directories(include)
 
 add_executable(${PROJECT_NAME}
     WIN32 MACOSX_BUNDLE
@@ -38,10 +34,13 @@ add_executable(${PROJECT_NAME}
     src/motion_detector.cpp
     src/position_tracker.cpp
     src/rect_helper.cpp
+    src/sdl_opencv_helper.cpp
     src/skin_tone_calibrator.cpp
     src/skin_tone_detector.cpp
     src/webcam.cpp
 )
+
+target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 if(MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /W4)
