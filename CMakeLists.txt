@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard to use")
-set(CMAKE_C_STANDARD 11 CACHE STRING "The C standard to use")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
 
 project(computervision)
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     if (MSVC)
@@ -16,10 +15,11 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
             set(CMAKE_VS_PLATFORM_NAME "x64")
         endif()
 
-        if(NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64") OR
-           NOT (CMAKE_SIZEOF_VOID_P STREQUAL "8"))
+        if(NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64") OR NOT (CMAKE_SIZEOF_VOID_P STREQUAL "8"))
             message(FATAL_ERROR "${CMAKE_VS_PLATFORM_NAME} arch is not supported! We only support x64")
         endif()
+    else()
+        message(FATAL_ERROR "We only support MSVC for Windows builds")
     endif()
 endif()
 
@@ -42,6 +42,7 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
+# Enable more compiler warnings
 if(MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 else()
