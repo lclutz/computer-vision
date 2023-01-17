@@ -67,7 +67,6 @@ GUI::render_stats()
 
     ImGui::Begin("Stats");
 
-    ImGui::Text("Game");
     ImGui::Text("FPS: %d", app.fps);
 
     ImGui::Text("Camera");

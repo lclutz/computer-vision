@@ -17,7 +17,7 @@ SkinToneDetector::SkinToneDetector(cv::Scalar skin_tone)
 {}
 
 cv::Mat
-SkinToneDetector::apply(const cv::Mat input, const cv::Mat hint)
+SkinToneDetector::apply(const cv::Mat input)
 {
     cv::Mat result = cv::Mat(input.rows, input.cols, CV_8UC1, cv::Scalar(0));
     cv::cvtColor(input, result, cv::COLOR_BGR2HSV);
@@ -27,9 +27,7 @@ SkinToneDetector::apply(const cv::Mat input, const cv::Mat hint)
 
     cv::inRange(result, lower_bound, upper_bound, result);
 
-    if (!hint.empty()) { result &= hint; }
-
-    cv::imshow("SkinToneDetector Mask", result);
+    cv::imshow("SkinToneDetector", result);
 
     return result;
 }

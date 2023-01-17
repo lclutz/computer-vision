@@ -53,7 +53,7 @@ BackgroundEstimator::apply(const cv::Mat input, double alpha)
             cv::Mat hue = channels[0];
             hue.convertTo(hue, CV_32FC1, 1.0/179.0);
 
-            cv::GaussianBlur(hue, hue, cv::Size(21, 21), 0);
+            // cv::GaussianBlur(hue, hue, cv::Size(21, 21), 0);
 
             if (model.empty()) { model = hue.clone(); }
 

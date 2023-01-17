@@ -12,5 +12,5 @@ struct SkinToneDetector {
     SkinToneDetector();
     SkinToneDetector(cv::Scalar skin_tone);
 
-    cv::Mat apply(const cv::Mat input, const cv::Mat hint = cv::Mat());
+    cv::Mat apply(const cv::Mat input);
 };
