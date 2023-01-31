@@ -5,6 +5,8 @@
 Projekt für das Labor der Vorlesung _Computer Vision_ an der
 [Hochschule Karlsruhe](https://www.h-ka.de/).
 
+[Folien](Presentation.pdf) der Abschlusspräsentation.
+
 ## Kurzanleitung
 
 ```shell
