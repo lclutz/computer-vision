@@ -6,6 +6,11 @@ Demo vom Stand der Technik mit
 ## Kurzanleitung
 
 ```shell
-pip install -r requirements.txt
-python3 main.py
+pipenv install
+pipenv run python main.py
 ```
+
+## Voraussetzungen
+
+- [Python](https://www.python.org/)
+- [Pipenv](https://pipenv.pypa.io/)
