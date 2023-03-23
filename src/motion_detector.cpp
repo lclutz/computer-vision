@@ -30,6 +30,7 @@ MotionDetector::apply(const cv::Mat input)
     previous_frame = gray;
 
     cv::imshow("MotionDetector Mask", output);
+    cv::pollKey();
 
     return output;
 }

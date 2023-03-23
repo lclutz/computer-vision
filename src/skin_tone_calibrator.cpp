@@ -76,6 +76,7 @@ SkinToneCalibrator::calibrate()
 
     cv::namedWindow("Skin tone", cv::WINDOW_NORMAL);
     cv::imshow("Skin tone", m);
+    cv::pollKey();
 
     skin_tone = color;
     skin_tone_calibrated = true;

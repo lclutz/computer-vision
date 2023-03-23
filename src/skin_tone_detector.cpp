@@ -28,6 +28,7 @@ SkinToneDetector::apply(const cv::Mat input)
     cv::inRange(result, lower_bound, upper_bound, result);
 
     cv::imshow("SkinToneDetector", result);
+    cv::pollKey();
 
     return result;
 }

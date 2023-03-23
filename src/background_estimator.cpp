@@ -77,6 +77,7 @@ BackgroundEstimator::apply(const cv::Mat input, double alpha)
     }
 
     cv::imshow(title, output);
+    cv::pollKey();
 
     return output;
 }

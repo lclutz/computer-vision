@@ -45,6 +45,7 @@ HandDetector::apply(const cv::Mat input)
                     cv::rectangle(combined_mask_boxes, hand_rect, cv::Scalar(0x00, 0x00, 0xff), 5);
                 }
                 cv::imshow("Combined Mask Boxes", combined_mask_boxes);
+                cv::pollKey();
 #endif
 
                 std::vector<cv::Rect> combined_boxes = merge_rects(boxes,
@@ -59,6 +60,7 @@ HandDetector::apply(const cv::Mat input)
                     cv::rectangle(combined_mask_combined_boxes, hand_rect, cv::Scalar(0x00, 0x00, 0xff), 5);
                 }
                 cv::imshow("Combined Mask Combined Boxes", combined_mask_combined_boxes);
+                cv::pollKey();
 #endif
 
                 // Sort boxes by area from largest to smallest
@@ -77,6 +79,7 @@ HandDetector::apply(const cv::Mat input)
                     cv::rectangle(combined_boxes_final_boxes, hand_rect, cv::Scalar(0x00, 0x00, 0xff), 5);
                 }
                 cv::imshow("Combined Final Boxes", combined_boxes_final_boxes);
+                cv::pollKey();
 #endif
 
                 output = input;
